@@ -1,20 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { addTodo } from "../Features/todo/todoSlice";
+import {
+  addTodo,
+  editTodo as editTodoAction,
+} from "../Features/todo/todoSlice";
 
-function AddTodo() {
+function AddTodo({ editingTodo, setEditingTodo }) {
   const [input, setInput] = useState("");
   const dispatch = useDispatch();
 
   const addTodoHandler = (event) => {
     event.preventDefault();
-    dispatch(addTodo(input));
-    setInput("");
+    if (!input) return;
+
+    if (editingTodo) {
+      dispatch(editTodoAction({ id: editingTodo.id, text: input }));
+      setEditingTodo(null);
+
+      // Reset edit mode
+    } else {
+      // Dispatch add action
+      dispatch(addTodo(input));
+    }
+
+    setInput(""); // Clear form
   };
+
+  useEffect(() => {
+    if (editingTodo) {
+      setInput(editingTodo.text);
+    }
+  }, [editingTodo]);
 
   return (
     <form
-      onSubmit={addTodoHandler}
+      onSubmit={() => {
+        addTodoHandler(event);
+      }}
       className="space-x-3 mt-12 flex items-center justify-center"
     >
       <input
@@ -28,7 +50,7 @@ function AddTodo() {
         type="submit"
         className="text-white bg-indigo-500 border-0 py-1.5 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
       >
-        Add Todo
+        {editingTodo ? "Update" : "AddTodo"}
       </button>
     </form>
   );
